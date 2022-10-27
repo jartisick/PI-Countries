@@ -1,0 +1,38 @@
+.container {
+  width: 300px;
+  vertical-align: middle;
+  white-space: nowrap;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.container input {
+  width: 300px;
+  height: 36px;
+  background: #2b303b;
+  border: none;
+  font-size: 10pt;
+  float: left;
+  color: #63717f;
+  padding-left: 45px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 0.3em;
+  box-shadow: -3px 5px 5px black;
+}
+
+.myBtn {
+  width: 50px;
+  height: 36px;
+  font-size: 11px;
+  background: #2b303b;
+  color: #63717f;
+  cursor: pointer;
+  border-radius: 0.3em;
+  box-shadow: -3px 5px 5px black;
+}
+
+.myBtn:hover {
+  background: rgb(26, 23, 23);
+  color: rgb(221, 216, 216);
+}

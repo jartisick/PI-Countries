@@ -1,0 +1,23 @@
+.ulPaged {
+  text-align: center;
+}
+
+.li {
+  margin: 10px 0px;
+  display: inline-block;
+}
+
+.pagedButton {
+  width: 40px;
+  height: 30px;
+  margin: 0 2px;
+  color: #63717f;
+  background: #2b303b;
+}
+
+.pagedButton:hover {
+  background: rgb(26, 23, 23);
+  color: rgb(221, 216, 216);
+  transform: scale(1.3);
+  cursor: pointer;
+}
