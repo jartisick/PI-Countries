@@ -4,7 +4,8 @@ const initialState = {
   activities: [],
   detail: [],
 };
-
+// siempre concatenamos todo el estado anterior, la idea es que siempre devolvamos el estado completo y modifiquemos
+// solo el arreglo correspondiente.
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case "GET_COUNTRIES":
@@ -27,6 +28,7 @@ const rootReducer = (state = initialState, action) => {
         // me va a modificar este que estoy devolviend, por lo tanto no me quedaré sin datos y siempre va a renderizar correctamente
       };
     //Primero pregunto si mi action.payload es ascendente, si es así, ejecuto el sort para ordenarlos de manera ascendente
+    //si es así, accede a mi estado countries, que es el que estamos renderizando y hacele un sort.
     case "ORDER_BY_NAME":
       let sortedArr =
         action.payload === "ascendente"
@@ -35,7 +37,10 @@ const rootReducer = (state = initialState, action) => {
               if (b.name > a.name) return -1;
               return 0;
             })
-          : state.countries.sort((a, b) => {
+          : // básicamente yo le voy a decir "A-Z". si countryA.name es mayor a countryB.name, devolveme la posición 1,
+            //porque le pedimos el ascendente, entonces la posición 1 sería countryB.name, el elemento "menor".
+            //si son iguales, me los deja como está. devuelve 0.
+            state.countries.sort((a, b) => {
               if (a.name > b.name) return -1;
               if (b.name > a.name) return 1;
               return 0;
@@ -45,6 +50,10 @@ const rootReducer = (state = initialState, action) => {
         countries: sortedArr,
       };
 
+    // El método sort() ordena los elementos de un arreglo (array) localmente y devuelve el arreglo ordenado
+    // lo que hace es ir comparando e ir poniéndoles a la derecha o a la izquierda, dependiendo si son
+    // más grandes o más chicos. Si son iguales no hace nada.
+
     case "ORDER_BY_POPULATION":
       let sortedPopulation =
         action.payload === "ascendente"
@@ -53,7 +62,9 @@ const rootReducer = (state = initialState, action) => {
               if (b.population > a.population) return 1;
               return 0;
             })
-          : state.countries.sort((a, b) => {
+          : // Misma lógica de arriba, pero, si es más grande devolveme a.population(countryA.population), si no pos lo contrario
+            // y si son iguales déjalo así como está.
+            state.countries.sort((a, b) => {
               if (a.population > b.population) return 1;
               if (b.population > a.population) return -1;
               return 0;
@@ -67,10 +78,6 @@ const rootReducer = (state = initialState, action) => {
         ...state, // una copia del estado
         countries: action.payload, // me lleno arreglo contries de la data
       };
-    case "POST_ACTIVITY": // devolvéme el estado como está, porque yo voy a crear la activity en una ruta nueva
-      return {
-        ...state,
-      };
 
     case "GET_ACTIVITIES":
       return {
@@ -78,48 +85,32 @@ const rootReducer = (state = initialState, action) => {
         activities: action.payload,
       };
 
-    case "FILTER_BY_ACTIVITY":
-      const countries = state.allCountries;
-
-      const filter = countries.filter((c) => {
-        let activity = c.activities.filter((a) =>
-          a.name.includes(action.payload)
-        );
-        if (activity.length > 0) {
-          return true;
-        }
-        return false;
-      });
-
-      let countryActivity = action.payload === "all" ? countries : filter;
-      if (!countryActivity[0]) countryActivity = "error";
-
-      return {
-        ...state,
-        countries: countryActivity,
-      };
-
     case "GET_COUNTRY_DETAIL":
       return {
         ...state,
-        detail: action.payload,
+        detail: action.payload, // lleno mi arreglo de detail de countries
       };
 
     case "BY_ACTIVITY":
-      const allCountriesActivities = state.countries;
-      const filteredActivities =
-        action.payload === "all"
-          ? allCountriesActivities.filter((p) =>
-              p.activities[0]?.name ? p.activities[0] : false
-            )
-          : allCountriesActivities.filter((p) =>
-              p.activities.some(({ name }) => name === action.payload)
-            );
       return {
         ...state,
-        allCountries: filteredActivities,
+        countries:
+          action.payload === "All" // si mi action.payload es All
+            ? state.allCountries // traeme todos los paises con actividad
+            : state.allCountries.filter((c) =>
+                c.activities.find((a) => a.name === action.payload)
+              ),
+        //  si no es All, va a traer todas los countries que correspondan o coincidan
+        // con lo que se selecciona en el filtro de actividad, mi action.payload
       };
+    case "LEAST_POPULATION":
+      const filtrado0 = state.allCountries;
+      const countriesFiltered = filtrado0.filter((el) => el.population === 0);
 
+      return {
+        ...state,
+        countries: countriesFiltered,
+      };
     default:
       return state;
   }

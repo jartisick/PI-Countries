@@ -6,14 +6,14 @@ export const ORDER_BY_NAME = "ORDER_BY_NAME";
 export const ORDER_BY_POPULATION = "ORDER_BY_POPULATION";
 export const GET_COUNTRIES_PER_NAME = "GET_COUNTRIES_PER_NAME";
 export const GET_ACTIVITIES = "GET_ACTIVITIES";
-export const FILTER_BY_ACTIVITY = "FILTER_BY_ACTIVITY";
 export const GET_COUNTRY_DETAIL = "GET_COUNTRY_DETAIL";
 export const BY_ACTIVITY = "BY_ACTIVITY";
+export const LEAST_POPULATION = "LEAST_POPULATION";
 
 // Me traigo los países del back.
 export const getCountries = () => {
   return async (dispatch) => {
-    var json = await axios.get("http://localhost:3001/countries");
+    const json = await axios.get("/countries");
     return dispatch({
       type: GET_COUNTRIES,
       payload: json.data,
@@ -25,12 +25,10 @@ export const getCountriesPerName = (search) => {
   //recibo un nombre por payload
   return async (dispatch) => {
     try {
-      var json = await axios.get(
-        `http://localhost:3001/countries?name=${search}`
-      ); //llamamos a la api pasanadole el nombre que recibo por payload con templates
+      const json1 = await axios.get(`/countries?name=${search}`); //llamamos a la api pasanadole el nombre que recibo por payload con templates
       return dispatch({
         type: GET_COUNTRIES_PER_NAME,
-        payload: json.data, //json.data es lo que me devuelve el get
+        payload: json1.data, //json.data es lo que me devuelve el get
       });
     } catch (error) {
       console.log(error);
@@ -62,29 +60,15 @@ export const orderByPopulation = (payload) => {
 
 export const getActivities = () => {
   return async (dispatch) => {
-    let json = await axios.get("http://localhost:3001/activities");
-    return dispatch({ type: GET_ACTIVITIES, payload: json.data });
-  };
-};
-
-export const postActivity = (payload) => {
-  return async () => {
-    var data = await axios.post("http://localhost:3001/activities", payload);
-    return data;
-  };
-};
-
-export const filterByActivity = (payload) => {
-  return {
-    type: FILTER_BY_ACTIVITY,
-    payload,
+    const activities = await axios.get("/activities");
+    return dispatch({ type: GET_ACTIVITIES, payload: activities.data });
   };
 };
 
 export const getCountryDetail = (id) => {
   return async (dispatch) => {
     try {
-      var json = await axios.get(`http://localhost:3001/countries/${id}`);
+      const json = await axios.get(`/countries/${id}`);
       return dispatch({
         type: GET_COUNTRY_DETAIL,
         payload: json.data,
@@ -95,9 +79,16 @@ export const getCountryDetail = (id) => {
   };
 };
 
-export function byActivity(activity) {
+export const byActivity = (payload) => {
   return {
     type: BY_ACTIVITY,
-    payload: activity,
+    payload,
   };
-}
+};
+
+export const leastPopulation = (payload) => {
+  return {
+    type: LEAST_POPULATION,
+    payload,
+  };
+};

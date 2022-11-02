@@ -21,6 +21,7 @@ h2 {
 }
 
 .myBtn {
+  margin: 10px;
   width: 150px;
   height: 36px;
   font-size: 12px;

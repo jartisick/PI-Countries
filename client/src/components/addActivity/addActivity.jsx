@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import { postActivity, getActivities, getCountries } from "../../actions";
+import { Link } from "react-router-dom";
+import { getCountries } from "../../actions";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./addActivity.module.css";
+import axios from "axios";
 
 const CreateActivity = () => {
   const dispatch = useDispatch();
-  const countries = useSelector((state) => state.countries); // me traigo las actividades de mi estado activities : []
-  const history = useHistory();
-
+  const countries = useSelector((state) => state.countries); // me traigo las countries de mi estado countries : []
   // actions dispachadas
   useEffect(() => {
-    dispatch(getActivities());
     dispatch(getCountries());
-    dispatch(postActivity());
   }, [dispatch]);
 
   document.title = "Add an Activity!";
   //validaciones/errores
+
   const validate = (input) => {
     let errors = {}; // me creo un objetito vacío y empiezo a preguntarle
-    if (!input.name) errors.name = "Plase name the activity";
+    if (
+      !/^[a-zA-Z\s]*$/.test(input.name) ||
+      !input.name ||
+      input.name.length < 6
+    )
+      errors.name = "Plase name the activity";
     if (!input.difficulty) errors.difficulty = "Plase add a dificulty (1-5)";
     if (!input.duration || input.duration < 1 || input.duration > 24)
       //actividad de 24 horas
@@ -42,7 +45,6 @@ const CreateActivity = () => {
     countryName: [],
   }); // a medida que voy modificando mis inputs, se va llenando este estado
 
-  const [success, setSuccess] = useState("");
   // manejando cada vez que cambien o se modifiquen mis inputs
   const handleChange = (e) => {
     setInput({
@@ -51,15 +53,7 @@ const CreateActivity = () => {
     }); // el nombre de mi input va a pasar a ser el valor que le pasemos
   };
 
-  // const handleCheck = (e) => {
-  //   if (e.target.checked)
-  //     //si selecciono de mi checkbox alguna season
-  //     setInput({
-  //       ...input,
-  //       season: e.target.value,
-  //     });
-  // };
-
+  //// Select de Countries + Validaciones ////
   const handleCountrySelect = (e) => {
     if (!input.countryName.includes(e.target.value)) {
       //si no le pasamos ningun valor al input
@@ -90,8 +84,8 @@ const CreateActivity = () => {
     }
   };
 
+  //// Borrar countries Seleccionadas! ////
   const deleteCountry = (e) => {
-    //para borrar countries seleccionadas
     e.preventDefault();
     setInput({
       //seteo mi input
@@ -102,18 +96,28 @@ const CreateActivity = () => {
     // en blanco sin el elemento clickeado
   };
 
+  //// Botón de CreateActivity! ////
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(postActivity(input));
-    setInput({
-      name: "",
-      difficulty: 0,
-      duration: 0,
-      season: "",
-      countryName: [],
-    });
-    setSuccess(`Activity ${input.name} Created!`);
-    // history.push("/home");
+    axios
+      .post(`/activities`, input)
+      .then(() => {
+        setInput({
+          name: "",
+          difficulty: 0,
+          duration: 0,
+          season: "",
+          countryName: [],
+        });
+        alert(`Activity ${input.name} Created!`);
+      })
+      .catch(() => {
+        alert(`${input.name} It's already created, try other name!`);
+        // Lógica de nombres duplicados
+        // nos sacamos la action de post que prácticamente no hacía nada, llamamos al back desde el front y le pasamos el input,
+        //como usamos una promise .then y le seteamos el input ahí dentro le mandamos lo que necesito pa submitiar y en el catch
+        // le mandamos otra alert que diga que el nombre ya está tomado, porque en la DB lo tengo en unique ese valor.
+      });
   };
 
   return (
@@ -121,10 +125,9 @@ const CreateActivity = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <div>
           <Link to="/home">
-            <button className={styles.myBtn}>Volver</button>
+            <button className={styles.myBtn}>Home</button>
           </Link>
           <h1>Add an Activity!</h1>
-
           <input
             placeholder="Whats your plan?"
             type="text"
@@ -134,6 +137,7 @@ const CreateActivity = () => {
             className={styles.inputName}
           />
           {errors.name && <p className={styles.error}>{errors.name} </p>}
+          {/* pasamos el error de las validaciones. */}
         </div>
         <div className={styles.difficultyCont}>
           <select
@@ -161,10 +165,11 @@ const CreateActivity = () => {
           {errors.difficulty && (
             <p className={styles.error}>{errors.difficulty} </p>
           )}
+          {/* pasamos el error de las validaciones. */}
         </div>
         <div>
           <input
-            type="time"
+            type="time" // de tipo tiempo para el relosito
             value={input.duration}
             name="duration"
             onChange={handleChange}
@@ -175,6 +180,7 @@ const CreateActivity = () => {
           {errors.duration && (
             <p className={styles.error}>{errors.duration} </p>
           )}
+          {/* le pasamos el error de las validaciones */}
         </div>
         <div className={styles.formSeasonContainer}>
           <select
@@ -197,6 +203,7 @@ const CreateActivity = () => {
             </option>
           </select>
           {errors.season && <p className={styles.error}>{errors.season} </p>}
+          {/* le pasamos el error de las validaciones */}
         </div>
 
         <div>
@@ -211,10 +218,13 @@ const CreateActivity = () => {
                 {c.name}
               </option>
             ))}
+            {/* Misma lógica que en el Home, nuestro estado Countries lo mapeamos y nos traemos el nombre,
+            para que renderice eso a nuestro Select */}
           </select>
           {errors.countryName && (
             <p className={styles.error}>{errors.countryName} </p>
           )}
+          {/* Y le mandamos el error de las validaciones */}
           <div>
             <h2>Selected Countries</h2>
             <div className={styles.selectedCountries}>
@@ -231,6 +241,9 @@ const CreateActivity = () => {
                     >
                       X
                     </button>
+                    {/* Aquí, mapeamos el input.countryName que, en el handleSelect vendría a ser el nombre del país
+                  seleccionado. Lo que renderizaremos como una listita con el nombre del mismo y un botón de X
+                  para eliminarlo si así lo deseamos. Chequear error en Estilos que se rompe cuando selecciono + de 2. */}
                   </div>
                 );
               })}
@@ -255,6 +268,9 @@ const CreateActivity = () => {
           >
             Create Activity!
           </button>
+          {/* Y aquí, el botón final. Le vamos a decir que sea de tipo "submit", le pasamos el evento y
+        lo deshabilitamos si o solo si le falten parámetros del formulario, una vez estén todos 
+        el botón estará disponible nuevamente :) */}
         </div>
       </form>
     </div>

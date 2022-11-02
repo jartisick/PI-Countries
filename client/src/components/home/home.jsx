@@ -9,6 +9,7 @@ import {
   orderByPopulation,
   getActivities,
   byActivity,
+  leastPopulation,
 } from "../../actions";
 // components
 import Country from "../country/country";
@@ -24,7 +25,7 @@ const Home = () => {
   const [orden, setOrden] = useState("");
   // //PAGINADO
   const [currentPage, setCurrentPage] = useState(1);
-  // // estado con la pagina actual y un estado que me setee la pagina actual. seteado en 1 porque siempre vamos a iniciar en la primera pagina.
+  // // estado local que me setee la pagina actual, seteado en 1 porque siempre vamos a iniciar en la primera pagina.
   const countriesPerPage = 10;
   // // cuantos paises tengo por pagina que va a setear los países por pagina.
   const indexOfLastCountry = currentPage * countriesPerPage; //10
@@ -47,21 +48,26 @@ const Home = () => {
   // del primer pais hasta el indice del ultimo pais menos 1 porque queremos mostrar 9 en la primera pagina
 
   const paginado = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+    setCurrentPage(pageNumber); //seteo mi pagina en ese numero de pagina
+  }; // rende
+
   // useEffect de getCountries
   useEffect(() => {
-    dispatch(getCountries());
+    dispatch(getCountries()); //despacho la action que me trae los paisaes
+    dispatch(getActivities());
   }, [dispatch]);
+  // me traigo del estado los paises cuando el componente se monta
 
   const handleFilterContinent = (event) => {
     dispatch(getFilteredContinent(event.target.value));
+    setCurrentPage(1);
     // Tengo una acción, que se va a disparar dependiendo de algo que va a estar pasando. Entonces, despachamos la acción
     // y le paso el event.target.value, donde por value me estoy refiriendo a las opciones de mi SELECT.
   };
 
   const handleFilterByName = (event) => {
     event.preventDefault();
+    // Cancela el evento si este es cancelable, sin detener el resto del funcionamiento del evento, es decir, puede ser llamado de nuevo.
     dispatch(orderByName(event.target.value));
     setCurrentPage(1);
     setOrden(`Ordenado ${event.target.value}`);
@@ -74,15 +80,17 @@ const Home = () => {
     setOrden(`Ordenado ${event.target.value}`);
   };
 
-  const activities = useSelector((state) => state.activities);
+  const activities = useSelector((state) => state.activities); // estado local, array de activities, bd, api
   // useEffect de Activities
-  useEffect(() => {
-    dispatch(getActivities());
-  }, [dispatch]);
-
+  const handleButton = (event) => {
+    event.preventDefault();
+    dispatch(leastPopulation());
+    setCurrentPage(1);
+  };
   const handleActivities = (event) => {
     event.preventDefault();
     dispatch(byActivity(event.target.value));
+    setCurrentPage(1);
   };
   return (
     <div>
@@ -100,6 +108,7 @@ const Home = () => {
                 <option value="descendente">Z-A</option>
               </select>
             </div>
+
             {/* By Population */}
             <div className={styles.populationContinent}>
               <select onChange={(event) => handleSortPopulation(event)}>
@@ -110,6 +119,7 @@ const Home = () => {
                 <option value="descendente">Least Populated</option>
               </select>
             </div>
+
             {/* By Continent */}
             <div className={styles.populationContinent}>
               <select onChange={(event) => handleFilterContinent(event)}>
@@ -123,10 +133,12 @@ const Home = () => {
                 <option value="South America">South America</option>
               </select>
             </div>
-
+            <div>
+              <button onClick={handleButton}>Countries 0</button>
+            </div>
             {/* Activities */}
             <div className={styles.activitiesSelect}>
-              <select onChange={handleActivities}>
+              <select onChange={(event) => handleActivities(event)}>
                 <option value="All">All</option>
                 {activities.map((act) => (
                   <option value={act.name}>{act.name}</option>
@@ -136,7 +148,7 @@ const Home = () => {
           </div>
           {/* SearchBar */}
           <div className={styles.searchbar}>
-            <SearchBar />
+            <SearchBar setCurrentPage={setCurrentPage} />
           </div>
         </div>
       </div>
@@ -146,6 +158,10 @@ const Home = () => {
         allCountries={allCountries.length}
         paginado={paginado}
       />
+      {/* como countriesPerPage, le paso el valor de las countries que quiero renderizar por pags (10),
+      como allCountries le paso mi state de allCountries.length porque necesitamos un valor númerico
+      y luego le paso mi constante paginado :) */}
+
       {/* Cards Render */}
       <div className={styles.countryCards}>
         {currentCountries?.map((country) => {
@@ -158,6 +174,7 @@ const Home = () => {
                   continent={country.continent}
                 />
               </Link>
+              {/* Necesito renderizar las countries que me devuelve el paginado, por eso mapeo mi constante currentCountries */}
             </div>
           );
         })}

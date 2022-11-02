@@ -1,13 +1,13 @@
-.ulPaged {
+.paged {
   text-align: center;
 }
 
-.li {
+.paged li {
   margin: 10px 0px;
   display: inline-block;
 }
 
-.pagedButton {
+.paged ul li button {
   width: 40px;
   height: 30px;
   margin: 0 2px;
@@ -15,9 +15,14 @@
   background: #2b303b;
 }
 
-.pagedButton:hover {
+.paged ul li button:hover {
   background: rgb(26, 23, 23);
   color: rgb(221, 216, 216);
   transform: scale(1.3);
   cursor: pointer;
+}
+
+.paged ul li button .active {
+  background: rgb(26, 23, 23);
+  font-weight: bold;
 }

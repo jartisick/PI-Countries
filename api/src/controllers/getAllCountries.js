@@ -30,17 +30,22 @@ const getAllCountries = async (req, res) => {
   // Obtener los países que coincidan con el nombre pasado como query parameter (No necesariamente tiene que ser una matcheo exacto)
   // Si no existe ningún país mostrar un mensaje adecuado
   const countries = await countriesApi();
+  // me traigo el name por query
   const { name } = req.query;
   const { order } = req.query;
   try {
+    // si la db está llena, no se hace nada
     let full = await Country.findAll({
       include: {
         model: Activity,
       },
     });
+    // si no está llena, se crean
     if (!full.length) {
       await Country.bulkCreate(countries);
     }
+    //bulkcreate busca los campos en el objeto y los pasa a la tabla,
+    //los datos del objeto para los que no hay campos en la tabla, no los guarda
   } catch (error) {
     console.log(error);
   }
@@ -49,6 +54,8 @@ const getAllCountries = async (req, res) => {
       where: {
         name: {
           [Sequelize.Op.iLike]: `%${name}%`,
+          //operador que busca coincidencias y no es case sensitive,
+          //si solo pongo el name que paso por query me toma la busqueda exacta
         },
       },
     });
